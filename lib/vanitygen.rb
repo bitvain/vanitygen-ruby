@@ -1,5 +1,7 @@
 require "vanitygen/version"
 
 module Vanitygen
-  # Your code goes here...
+  def self.generate(pattern)
+    pattern
+  end
 end
