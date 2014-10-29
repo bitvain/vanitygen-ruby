@@ -13,20 +13,20 @@ describe Vanitygen do
 
   describe '.continuous' do
     it 'requires a block' do
-      expect{Vanitygen.continuous(pattern_string)}.to raise_error
+      expect{Vanitygen.continuous(pattern_any)}.to raise_error
     end
 
     context 'with block' do
-      let(:yields) { [] }
-      subject! do
-        Vanitygen.continuous(pattern_any) { |key| yields << key }
-      end
-      after { subject.kill }
-
-      it { is_expected.to be_instance_of Thread }
       it 'runs a lot' do
-        sleep 0.01
-        expect(yields.count).to be > 100
+        yields = []
+        Vanitygen.continuous(pattern_any, iters: 10) { |key| yields << key }
+        expect(yields.count).to be 10
+      end
+
+      it 'matches' do
+        yields = []
+        Vanitygen.continuous(pattern_string, iters: 2) { |key| yields << key }
+        expect(yields).to all(start_with(pattern_string))
       end
     end
   end

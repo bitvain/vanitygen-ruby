@@ -5,11 +5,12 @@ module Vanitygen
     pattern
   end
 
-  def self.continuous(pattern)
-    raise unless block_given?
+  def self.continuous(pattern, options={})
+    raise LocalJumpError.new('no block given') unless block_given?
+    iters = options.fetch(:iters, Float::INFINITY)
 
-    Thread.new do
-      loop { yield generate(pattern) }
+    while (iters -= 1) >= 0 do
+      yield generate(pattern)
     end
   end
 
