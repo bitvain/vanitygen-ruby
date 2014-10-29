@@ -30,4 +30,10 @@ describe Vanitygen do
       end
     end
   end
+
+  describe '.difficulty' do
+    it 'returns difficulty in integer' do
+      expect(Vanitygen.difficulty(pattern_string)).to be_a Integer
+    end
+  end
 end

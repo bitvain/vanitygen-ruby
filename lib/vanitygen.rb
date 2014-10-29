@@ -12,4 +12,8 @@ module Vanitygen
       loop { yield generate(pattern) }
     end
   end
+
+  def self.difficulty(pattern)
+    return pattern.size
+  end
 end
