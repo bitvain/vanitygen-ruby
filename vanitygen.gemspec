@@ -25,4 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.1"
   spec.add_development_dependency "bitcoin-ruby", "= 0.0.6"
+  spec.add_development_dependency "ffi", "= 1.9.6"
 end
