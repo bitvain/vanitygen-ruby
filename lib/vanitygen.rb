@@ -2,7 +2,10 @@ require "vanitygen/version"
 
 module Vanitygen
   def self.generate(pattern)
-    pattern
+    loop do
+      addr = Bitcoin::Key.generate.addr
+      return addr if addr.start_with?(pattern)
+    end
   end
 
   def self.continuous(pattern, options={})

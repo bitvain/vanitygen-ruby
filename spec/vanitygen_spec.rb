@@ -1,12 +1,14 @@
 require 'vanitygen'
+require 'bitcoin'
 
 describe Vanitygen do
-  let(:pattern_string) { '1ab' }
+  let(:pattern_string) { '1A' }
   let(:pattern_any) { '1' }
 
   describe '.generate' do
     context 'with string argument' do
       subject { Vanitygen.generate(pattern_string) }
+      it { is_expected.to satisfy { |addr| Bitcoin.valid_address?(addr) } }
       it { is_expected.to start_with(pattern_string) }
     end
   end
@@ -23,7 +25,13 @@ describe Vanitygen do
         expect(yields.count).to be 10
       end
 
-      it 'matches' do
+      it 'returns valid addresses' do
+        yields = []
+        Vanitygen.continuous(pattern_any, iters: 4) { |key| yields << key }
+        expect(yields).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
+      end
+
+      it 'starts with matching pattern' do
         yields = []
         Vanitygen.continuous(pattern_string, iters: 2) { |key| yields << key }
         expect(yields).to all(start_with(pattern_string))
