@@ -4,7 +4,9 @@ module Vanitygen
   def self.generate(pattern)
     loop do
       key = Bitcoin::Key.generate
-      return key if key.addr.start_with?(pattern)
+      if key.addr.start_with?(pattern)
+        return { address: key.addr, priv_key: key.priv }
+      end
     end
   end
 

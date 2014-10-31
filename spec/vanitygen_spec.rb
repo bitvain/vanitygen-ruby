@@ -10,16 +10,16 @@ describe Vanitygen do
       subject { Vanitygen.generate(pattern_string) }
 
       it 'has valid address' do
-        expect(subject.addr).to satisfy { |addr| Bitcoin.valid_address?(addr) }
+        expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
       end
 
       it 'has address starting with pattern' do
-        expect(subject.addr).to start_with(pattern_string)
+        expect(subject[:address]).to start_with(pattern_string)
       end
 
       it 'has correct private key to unlock pattern' do
-        bkey = Bitcoin::Key.new(subject.priv)
-        expect(subject.addr).to eq(bkey.addr)
+        bkey = Bitcoin::Key.new(subject[:priv_key])
+        expect(subject[:address]).to eq(bkey.addr)
       end
     end
   end
@@ -39,13 +39,13 @@ describe Vanitygen do
       it 'returns valid addresses' do
         yields = []
         Vanitygen.continuous(pattern_any, iters: 4) { |key| yields << key }
-        expect(yields).to all(satisfy { |key| Bitcoin.valid_address?(key.addr) })
+        expect(yields).to all(satisfy { |key| Bitcoin.valid_address?(key[:address]) })
       end
 
       it 'starts with matching pattern' do
         yields = []
         Vanitygen.continuous(pattern_string, iters: 2) { |key| yields << key }
-        expect(yields).to all(satisfy { |key| key.addr.start_with?(pattern_string)} )
+        expect(yields).to all(satisfy { |key| key[:address].start_with?(pattern_string)} )
       end
     end
   end
