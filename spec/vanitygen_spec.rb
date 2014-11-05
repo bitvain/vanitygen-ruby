@@ -19,7 +19,7 @@ describe Vanitygen do
       end
 
       it 'has correct private key to unlock pattern' do
-        bkey = Bitcoin::Key.new(subject[:priv_key])
+        bkey = Bitcoin::Key.new(subject[:private_key])
         expect(subject[:address]).to eq(bkey.addr)
       end
     end

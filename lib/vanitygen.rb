@@ -7,7 +7,7 @@ module Vanitygen
     loop do
       key = Bitcoin::Key.generate
       if patterns.any? { |pattern| key.addr.start_with?(pattern) }
-        return { address: key.addr, priv_key: key.priv }
+        return { address: key.addr, private_key: key.priv }
       end
     end
   end
