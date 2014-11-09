@@ -12,10 +12,9 @@ module Vanitygen
     end
   end
 
-  def self.continuous(*patterns)
+  def self.continuous(patterns, options={})
     raise LocalJumpError.new('no block given') unless block_given?
 
-    options = patterns.last.is_a?(Hash) ? patterns.pop : {}
     iters = options.fetch(:iters, Float::INFINITY)
 
     while (iters -= 1) >= 0
