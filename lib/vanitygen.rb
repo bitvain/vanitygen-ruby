@@ -1,7 +1,7 @@
-require 'vanitygen/version'
-require 'vanitygen/vanitygen_cext'
-
 module Vanitygen
+  autoload :VERSION, 'vanitygen/version'
+  autoload :Cext,    'vanitygen/vanitygen_cext'
+
   def self.generate(*patterns)
     options = patterns.last.is_a?(Hash) ? patterns.pop : {}
     raise ArgumentError.new('wrong number of arguments (0 for 1+)') unless patterns.size > 0
