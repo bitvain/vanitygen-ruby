@@ -1,7 +1,8 @@
 #include "ruby.h"
+#include "util.h"
 
 static VALUE test(VALUE mod) {
-    return rb_str_new2("test from C!");
+    return rb_str_new2(vg_b58_alphabet);
 }
 
 void Init_vanitygen() {
