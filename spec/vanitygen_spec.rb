@@ -21,6 +21,15 @@ describe Vanitygen do
       bkey = Bitcoin::Key.new(subject[:private_key])
       expect(subject[:address]).to eq(bkey.addr)
     end
+
+    it 'matches with case insensitivity' do
+      addresses = (1..1000).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
+      # Should really be these:
+      # expect(addresses).to any(start_with pattern_string_a.upcase)
+      # expect(addresses).to any(start_with pattern_string_b.upcase)
+      expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.upcase) } }
+      expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.downcase) } }
+    end
   end
 
   describe '.continuous' do
@@ -36,15 +45,15 @@ describe Vanitygen do
       end
 
       it 'returns valid addresses' do
-        yields = []
-        Vanitygen.continuous([pattern_any], iters: 4) { |data| yields << data }
-        expect(yields).to all(satisfy { |data| Bitcoin.valid_address?(data[:address]) })
+        addresses = []
+        Vanitygen.continuous([pattern_any], iters: 4) { |data| addresses << data[:address] }
+        expect(addresses).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
       end
 
       it 'starts with matching pattern' do
-        yields = []
-        Vanitygen.continuous([pattern_string_a], iters: 2) { |data| yields << data }
-        expect(yields).to all(satisfy { |data| data[:address].start_with?(pattern_string_a)} )
+        addresses = []
+        Vanitygen.continuous([pattern_string_a], iters: 2) { |data| addresses << data[:address] }
+        expect(addresses).to all(start_with(pattern_string_a))
       end
     end
   end
