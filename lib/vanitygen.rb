@@ -1,5 +1,5 @@
 require 'vanitygen/version'
-require 'vanitygen/vanitygen'
+require 'vanitygen/vanitygen_cext'
 
 module Vanitygen
   def self.generate(*patterns)

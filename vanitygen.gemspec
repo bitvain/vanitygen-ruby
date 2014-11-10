@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
-  spec.extensions    = ['ext/my_malloc/extconf.rb']
+  spec.extensions    = ['ext/vanitygen/extconf.rb']
 
   # FIXME: remove when there's a real implementation
   spec.add_runtime_dependency "bitcoin-ruby", "= 0.0.6"
