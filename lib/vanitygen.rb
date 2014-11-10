@@ -31,6 +31,6 @@ module Vanitygen
   end
 
   def self.difficulty(pattern)
-    return pattern.size
+    return Cext.difficulty_prefix(pattern)
   end
 end

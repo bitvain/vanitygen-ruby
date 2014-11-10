@@ -59,8 +59,8 @@ describe Vanitygen do
   end
 
   describe '.difficulty' do
-    it 'returns difficulty in integer' do
-      expect(Vanitygen.difficulty(pattern_string_a)).to be_a Integer
+    it 'returns difficulty in Numeric' do
+      expect(Vanitygen.difficulty(pattern_string_a)).to be_a Numeric
     end
   end
 end
