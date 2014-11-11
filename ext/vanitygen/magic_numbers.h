@@ -1,0 +1,2 @@
+#define BITCOIN_ADDR_TYPE 0
+#define BITCOIN_PRIV_TYPE 128
