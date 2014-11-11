@@ -17,8 +17,8 @@ describe Vanitygen do
       expect(subject[:address]).to start_with(pattern_string_a)
     end
 
-    it 'has correct private key to unlock pattern' do
-      bkey = Bitcoin::Key.new(subject[:private_key])
+    it 'has correct wif (wallet import format) to unlock pattern' do
+      bkey = Bitcoin::Key.from_base58(subject[:wif])
       expect(subject[:address]).to eq(bkey.addr)
     end
 

@@ -18,7 +18,7 @@ static void vg_output_error_noop(vg_context_t *vcp, const char *info) {}
 
 static VALUE rb_generate_return; // FIXME: thread unsafe
 static VALUE rbsym_address;
-static VALUE rbsym_private_key;
+static VALUE rbsym_wif;
 static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char *pattern) {
     rb_generate_return = rb_hash_new();
 
@@ -31,7 +31,7 @@ static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char
 
     vg_encode_privkey(pkey, vcp->vc_privtype, buffer);
     VALUE rb_private_key = rb_str_new2(buffer);
-    rb_hash_aset(rb_generate_return, rbsym_private_key, rb_private_key);
+    rb_hash_aset(rb_generate_return, rbsym_wif, rb_private_key);
 }
 
 static VALUE generate_prefix(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensitive) {
@@ -71,5 +71,5 @@ void Init_vanitygen_cext() {
     rb_define_singleton_method(cext, "generate_prefix", generate_prefix, 2);
 
     rbsym_address = ID2SYM(rb_intern("address"));
-    rbsym_private_key = ID2SYM(rb_intern("private_key"));
+    rbsym_wif = ID2SYM(rb_intern("wif"));
 }
