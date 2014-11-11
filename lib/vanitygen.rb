@@ -3,7 +3,7 @@ module Vanitygen
   autoload :Cext,    'vanitygen/vanitygen_cext'
 
   def self.generate(pattern, options={})
-    Cext.generate_prefix([pattern], options[:case_insensitive])
+    Cext.generate_prefixes([pattern], options[:case_insensitive])
   end
 
   def self.continuous(patterns, options={})
@@ -13,7 +13,7 @@ module Vanitygen
 
     patterns.push options unless options.empty?
     while (iters -= 1) >= 0
-      yield Cext.generate_prefix(patterns, options[:case_insensitive])
+      yield Cext.generate_prefixes(patterns, options[:case_insensitive])
     end
   end
 

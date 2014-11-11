@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <ruby.h>
 
+#include "vanitygen.h"
 #include "pattern.h"
 #include "util.h"
 
@@ -14,7 +15,7 @@ static VALUE difficulty_prefix(VALUE self, VALUE rb_pattern) {
 }
 
 static void vg_output_timing_noop(vg_context_t *vcp, double count, unsigned long long rate, unsigned long long total) {}
-static void vg_output_error_noop(vg_context_t *vcp, const char *info) {}
+static void vg_generate_output_error(vg_context_t *vcp, const char *info) {}
 
 static VALUE rb_generate_return; // FIXME: thread unsafe
 static VALUE rbsym_address;
@@ -34,7 +35,7 @@ static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char
     rb_hash_aset(rb_generate_return, rbsym_wif, rb_private_key);
 }
 
-static VALUE generate_prefix(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensitive) {
+static VALUE generate_prefixes(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensitive) {
     const bool caseinsensitive = RTEST(rb_caseinsensitive);
 
     vg_context_t *vcp = vg_prefix_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE, caseinsensitive);
@@ -47,9 +48,10 @@ static VALUE generate_prefix(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensi
     vcp->vc_pubkey_base = NULL;        // Specify base public key for piecewise key generation
 
     vcp->vc_output_match = vg_generate_output_match;
+    vcp->vc_output_error = vg_generate_output_error;
     vcp->vc_output_timing = vg_output_timing_noop;
 
-    int len = RARRAY_LEN(rb_patterns);
+    long len = RARRAY_LEN(rb_patterns);
     for(int i=0; i < len; i++) {
       VALUE rb_pattern = rb_ary_entry(rb_patterns, i);
       const char *pattern = RSTRING_PTR(rb_pattern);
@@ -68,7 +70,7 @@ void Init_vanitygen_cext() {
     VALUE cext = rb_define_module_under(vanitygen, "Cext");
 
     rb_define_singleton_method(cext, "difficulty_prefix", difficulty_prefix, 1);
-    rb_define_singleton_method(cext, "generate_prefix", generate_prefix, 2);
+    rb_define_singleton_method(cext, "generate_prefixes", generate_prefixes, 2);
 
     rbsym_address = ID2SYM(rb_intern("address"));
     rbsym_wif = ID2SYM(rb_intern("wif"));
