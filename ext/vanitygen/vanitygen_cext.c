@@ -17,24 +17,21 @@ static void vg_output_timing_noop(vg_context_t *vcp, double count, unsigned long
 static void vg_output_error_noop(vg_context_t *vcp, const char *info) {}
 
 static VALUE rb_generate_return; // FIXME: thread unsafe
-static VALUE data_address;
-static VALUE data_private_key;
+static VALUE rbsym_address;
+static VALUE rbsym_private_key;
 static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char *pattern) {
-    if (rb_generate_return == NULL) {
-        rb_generate_return = rb_hash_new();
-        data_address = rb_str_new2("address");
-        data_private_key = rb_str_new2("private_key");
-    }
+    rb_generate_return = rb_hash_new();
+
     char buffer[VG_PROTKEY_MAX_B58];
     EC_POINT *ppnt = (EC_POINT *) EC_KEY_get0_public_key(pkey);
 
     vg_encode_address(ppnt, EC_KEY_get0_group(pkey), vcp->vc_pubkeytype, buffer);
     VALUE rb_address = rb_str_new2(buffer);
-    rb_hash_aset(rb_generate_return, data_address, rb_address);
+    rb_hash_aset(rb_generate_return, rbsym_address, rb_address);
 
     vg_encode_privkey(pkey, vcp->vc_privtype, buffer);
     VALUE rb_private_key = rb_str_new2(buffer);
-    rb_hash_aset(rb_generate_return, data_private_key, rb_private_key);
+    rb_hash_aset(rb_generate_return, rbsym_private_key, rb_private_key);
 }
 
 static VALUE generate_prefix(VALUE self, VALUE rb_pattern, VALUE rb_caseinsensitive) {
@@ -65,6 +62,10 @@ static VALUE generate_prefix(VALUE self, VALUE rb_pattern, VALUE rb_caseinsensit
 void Init_vanitygen_cext() {
     VALUE vanitygen = rb_define_module("Vanitygen");
     VALUE cext = rb_define_module_under(vanitygen, "Cext");
+
     rb_define_singleton_method(cext, "difficulty_prefix", difficulty_prefix, 1);
     rb_define_singleton_method(cext, "generate_prefix", generate_prefix, 2);
+
+    rbsym_address = ID2SYM(rb_intern("address"));
+    rbsym_private_key = ID2SYM(rb_intern("private_key"));
 }
