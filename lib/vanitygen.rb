@@ -3,7 +3,7 @@ module Vanitygen
   autoload :Ext,    'vanitygen/vanitygen_ext'
 
   def self.generate(pattern, options={})
-    Ext.generate_prefixes([pattern], options[:case_insensitive])
+    Ext.generate_prefixes([pattern], options)
   end
 
   def self.continuous(patterns, options={})
@@ -13,7 +13,7 @@ module Vanitygen
 
     patterns.push options unless options.empty?
     while (iters -= 1) >= 0
-      yield Ext.generate_prefixes(patterns, options[:case_insensitive])
+      yield Ext.generate_prefixes(patterns, options)
     end
   end
 

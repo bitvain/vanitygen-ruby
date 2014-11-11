@@ -28,14 +28,13 @@ static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char
     rb_hash_aset(rb_generate_return, rbsym_wif, rb_private_key);
 }
 
-VALUE vanitygen_generate_prefixes(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensitive) {
-    const bool caseinsensitive = RTEST(rb_caseinsensitive);
-
+vg_context_t * create_context(VALUE rb_options) {
+    const bool caseinsensitive = RTEST(rb_hash_aref(rb_options, rbsym_case_insensitive));
     vg_context_t *vcp = vg_prefix_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE, caseinsensitive);
     vcp->vc_verbose = false;
     vcp->vc_result_file = NULL;        // Write pattern matches to <file>
-    vcp->vc_remove_on_match = true;    // false = Keep pattern and continue search after finding a match
-    vcp->vc_only_one = true;           // true = Stop after first match
+    vcp->vc_remove_on_match = !RTEST(rb_hash_aref(rb_options, rbsym_continuous));
+    vcp->vc_only_one = !RTEST(rb_hash_aref(rb_options, rbsym_only_one));
     vcp->vc_format = VCF_PUBKEY;       // Generate address with the given format (pubkey or script)
     vcp->vc_pubkeytype = BITCOIN_ADDR_TYPE;
     vcp->vc_pubkey_base = NULL;        // Specify base public key for piecewise key generation
@@ -44,10 +43,18 @@ VALUE vanitygen_generate_prefixes(VALUE self, VALUE rb_patterns, VALUE rb_casein
     vcp->vc_output_error = vg_generate_output_error;
     vcp->vc_output_timing = vg_output_timing_noop;
 
+    return vcp;
+}
+
+VALUE vanitygen_generate_prefixes(VALUE self, VALUE rb_patterns, VALUE rb_options) {
+    Check_Type(rb_patterns, T_ARRAY);
+    Check_Type(rb_options, T_HASH);
+
+    vg_context_t *vcp = create_context(rb_options);
     long len = RARRAY_LEN(rb_patterns);
     for(int i=0; i < len; i++) {
       VALUE rb_pattern = rb_ary_entry(rb_patterns, i);
-      const char *pattern = RSTRING_PTR(rb_pattern);
+      const char *pattern = StringValueCStr(rb_pattern);
       vg_context_add_patterns(vcp, &pattern, 1);
     }
 
