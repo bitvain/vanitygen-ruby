@@ -1,12 +1,13 @@
 #include <stdbool.h>
 #include <ruby.h>
 
-#include "vanitygen.h"
 #include "pattern.h"
 #include "util.h"
 
 #define BITCOIN_ADDR_TYPE 0
 #define BITCOIN_PRIV_TYPE 128
+
+extern int start_threads(vg_context_t *vcp, int nthreads);
 
 static VALUE difficulty_prefix(VALUE self, VALUE rb_pattern) {
     const char *pattern = RSTRING_PTR(rb_pattern);
