@@ -1,9 +1,9 @@
 module Vanitygen
   autoload :VERSION, 'vanitygen/version'
-  autoload :Cext,    'vanitygen/vanitygen_cext'
+  autoload :Ext,    'vanitygen/vanitygen_ext'
 
   def self.generate(pattern, options={})
-    Cext.generate_prefixes([pattern], options[:case_insensitive])
+    Ext.generate_prefixes([pattern], options[:case_insensitive])
   end
 
   def self.continuous(patterns, options={})
@@ -13,11 +13,11 @@ module Vanitygen
 
     patterns.push options unless options.empty?
     while (iters -= 1) >= 0
-      yield Cext.generate_prefixes(patterns, options[:case_insensitive])
+      yield Ext.generate_prefixes(patterns, options[:case_insensitive])
     end
   end
 
   def self.difficulty(pattern)
-    return Cext.difficulty_prefix(pattern)
+    return Ext.difficulty_prefix(pattern)
   end
 end

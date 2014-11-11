@@ -65,12 +65,12 @@ static VALUE generate_prefixes(VALUE self, VALUE rb_patterns, VALUE rb_caseinsen
     return rb_generate_return;
 }
 
-void Init_vanitygen_cext() {
+void Init_vanitygen_ext() {
     VALUE vanitygen = rb_define_module("Vanitygen");
-    VALUE cext = rb_define_module_under(vanitygen, "Cext");
+    VALUE ext = rb_define_module_under(vanitygen, "Ext");
 
-    rb_define_singleton_method(cext, "difficulty_prefix", difficulty_prefix, 1);
-    rb_define_singleton_method(cext, "generate_prefixes", generate_prefixes, 2);
+    rb_define_singleton_method(ext, "difficulty_prefix", difficulty_prefix, 1);
+    rb_define_singleton_method(ext, "generate_prefixes", generate_prefixes, 2);
 
     rbsym_address = ID2SYM(rb_intern("address"));
     rbsym_wif = ID2SYM(rb_intern("wif"));
