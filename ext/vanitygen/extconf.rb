@@ -2,7 +2,7 @@ require 'mkmf'
 require 'set'
 
 headers = Set.new
-Dir[File.expand_path '../*', __FILE__].each do |filename|
+Dir[File.expand_path '../*.{h,c}', __FILE__].each do |filename|
   File.open filename do |file|
     headers.merge file.grep(/^\#include *</).map { |l| l.gsub(/^\#include *<(.*)>\s*$/, '\1') }
   end
