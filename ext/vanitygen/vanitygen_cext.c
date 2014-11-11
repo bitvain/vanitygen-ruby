@@ -34,15 +34,14 @@ static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char
     rb_hash_aset(rb_generate_return, rbsym_private_key, rb_private_key);
 }
 
-static VALUE generate_prefix(VALUE self, VALUE rb_pattern, VALUE rb_caseinsensitive) {
-    const char *pattern = RSTRING_PTR(rb_pattern);
+static VALUE generate_prefix(VALUE self, VALUE rb_patterns, VALUE rb_caseinsensitive) {
     const bool caseinsensitive = RTEST(rb_caseinsensitive);
 
     vg_context_t *vcp = vg_prefix_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE, caseinsensitive);
     vcp->vc_verbose = false;
     vcp->vc_result_file = NULL;        // Write pattern matches to <file>
     vcp->vc_remove_on_match = true;    // false = Keep pattern and continue search after finding a match
-    vcp->vc_only_one = false;          // true = Stop after first match
+    vcp->vc_only_one = true;           // true = Stop after first match
     vcp->vc_format = VCF_PUBKEY;       // Generate address with the given format (pubkey or script)
     vcp->vc_pubkeytype = BITCOIN_ADDR_TYPE;
     vcp->vc_pubkey_base = NULL;        // Specify base public key for piecewise key generation
@@ -50,7 +49,12 @@ static VALUE generate_prefix(VALUE self, VALUE rb_pattern, VALUE rb_caseinsensit
     vcp->vc_output_match = vg_generate_output_match;
     vcp->vc_output_timing = vg_output_timing_noop;
 
-    vg_context_add_patterns(vcp, &pattern, 1);
+    int len = RARRAY_LEN(rb_patterns);
+    for(int i=0; i < len; i++) {
+      VALUE rb_pattern = rb_ary_entry(rb_patterns, i);
+      const char *pattern = RSTRING_PTR(rb_pattern);
+      vg_context_add_patterns(vcp, &pattern, 1);
+    }
 
     start_threads(vcp, 1); // FIXME: actual threading
 

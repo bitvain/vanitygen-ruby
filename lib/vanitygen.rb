@@ -2,21 +2,8 @@ module Vanitygen
   autoload :VERSION, 'vanitygen/version'
   autoload :Cext,    'vanitygen/vanitygen_cext'
 
-  def self.generate(*patterns)
-    options = patterns.last.is_a?(Hash) ? patterns.pop : {}
-    raise ArgumentError.new('wrong number of arguments (0 for 1+)') unless patterns.size > 0
-
-    if options[:case_insensitive]
-      patterns = patterns.map(&:downcase)
-    end
-
-    loop do
-      key = Bitcoin::Key.generate
-      test = options[:case_insensitive] ? key.addr.downcase : key.addr
-      if patterns.any? { |pattern| test.start_with?(pattern) }
-        return { address: key.addr, private_key: key.priv }
-      end
-    end
+  def self.generate(pattern, options={})
+    Cext.generate_prefix([pattern], options[:case_insensitive])
   end
 
   def self.continuous(patterns, options={})
@@ -26,7 +13,7 @@ module Vanitygen
 
     patterns.push options unless options.empty?
     while (iters -= 1) >= 0
-      yield generate(*patterns)
+      yield Cext.generate_prefix(patterns, options[:case_insensitive])
     end
   end
 

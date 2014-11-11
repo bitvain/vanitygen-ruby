@@ -23,7 +23,7 @@ describe Vanitygen do
     end
 
     it 'matches with case insensitivity' do
-      addresses = (1..1000).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
+      addresses = (1..300).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
       # Should really be these:
       # expect(addresses).to any(start_with pattern_string_a.upcase)
       # expect(addresses).to any(start_with pattern_string_b.upcase)
