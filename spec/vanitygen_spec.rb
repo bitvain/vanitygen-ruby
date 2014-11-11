@@ -17,13 +17,13 @@ describe Vanitygen do
       expect(subject[:address]).to start_with(pattern_string_a)
     end
 
-    it 'has correct private key to unlock pattern' do
-      bkey = Bitcoin::Key.new(subject[:private_key])
+    it 'has correct wif (wallet import format) to unlock pattern' do
+      bkey = Bitcoin::Key.from_base58(subject[:wif])
       expect(subject[:address]).to eq(bkey.addr)
     end
 
     it 'matches with case insensitivity' do
-      addresses = (1..1000).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
+      addresses = (1..300).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
       # Should really be these:
       # expect(addresses).to any(start_with pattern_string_a.upcase)
       # expect(addresses).to any(start_with pattern_string_b.upcase)
@@ -59,8 +59,8 @@ describe Vanitygen do
   end
 
   describe '.difficulty' do
-    it 'returns difficulty in integer' do
-      expect(Vanitygen.difficulty(pattern_string_a)).to be_a Integer
+    it 'returns difficulty in Numeric' do
+      expect(Vanitygen.difficulty(pattern_string_a)).to be_a Numeric
     end
   end
 end

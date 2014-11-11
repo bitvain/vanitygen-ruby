@@ -1,21 +1,9 @@
-require "vanitygen/version"
-
 module Vanitygen
-  def self.generate(*patterns)
-    options = patterns.last.is_a?(Hash) ? patterns.pop : {}
-    raise ArgumentError.new('wrong number of arguments (0 for 1+)') unless patterns.size > 0
+  autoload :VERSION, 'vanitygen/version'
+  autoload :Ext,    'vanitygen/vanitygen_ext'
 
-    if options[:case_insensitive]
-      patterns = patterns.map(&:downcase)
-    end
-
-    loop do
-      key = Bitcoin::Key.generate
-      test = options[:case_insensitive] ? key.addr.downcase : key.addr
-      if patterns.any? { |pattern| test.start_with?(pattern) }
-        return { address: key.addr, private_key: key.priv }
-      end
-    end
+  def self.generate(pattern, options={})
+    Ext.generate_prefixes([pattern], options)
   end
 
   def self.continuous(patterns, options={})
@@ -25,11 +13,11 @@ module Vanitygen
 
     patterns.push options unless options.empty?
     while (iters -= 1) >= 0
-      yield generate(*patterns)
+      yield Ext.generate_prefixes(patterns, options)
     end
   end
 
   def self.difficulty(pattern)
-    return pattern.size
+    return Ext.difficulty_prefix(pattern)
   end
 end

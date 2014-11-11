@@ -1,0 +1,1 @@
+../../vanitygen-c/pattern.h

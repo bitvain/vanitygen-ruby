@@ -1,0 +1,3 @@
+[submodule "vanitygen"]
+	path = vanitygen-c
+	url = https://github.com/bitvain/vanitygen.git
