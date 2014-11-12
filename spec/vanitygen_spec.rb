@@ -4,7 +4,7 @@ require 'bitcoin'
 describe Vanitygen do
   let(:pattern_string_a) { '1A' }
   let(:pattern_string_b) { '1B' }
-  let(:pattern_regex_a) { /[fF][oO][oO]/ }
+  let(:pattern_regex_foo) { /[fF][oO][oO]/ }
   let(:pattern_any) { '1' }
 
   describe '.generate' do
@@ -35,40 +35,57 @@ describe Vanitygen do
     end
 
     context 'regex' do
-      subject { Vanitygen.generate(pattern_regex_a) }
+      subject { Vanitygen.generate(pattern_regex_foo) }
 
       it 'has valid address' do
         expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
       end
 
       it 'has address matching pattern' do
-        expect(subject[:address]).to match(pattern_regex_a)
+        expect(subject[:address]).to match(pattern_regex_foo)
       end
     end
   end
 
   describe '.continuous' do
     it 'requires a block' do
-      expect{Vanitygen.continuous([pattern_any])}.to raise_error
+      expect{Vanitygen.continuous([pattern_any])}.to raise_error(LocalJumpError)
     end
 
     context 'with block' do
+      let(:noop) { proc{} }
+      let(:captured) { [] }
+
+      def capture(attr=nil)
+        if attr
+          proc { |data| captured << data[:address] }
+        else
+          proc { |data| captured << data }
+        end
+      end
+
       it 'runs a lot' do
-        yields = []
-        Vanitygen.continuous([pattern_any], iters: 10) { |data| yields << data }
-        expect(yields.count).to be 10
+        Vanitygen.continuous([pattern_any], iters: 10, &capture)
+        expect(captured.count).to be 10
       end
 
       it 'returns valid addresses' do
-        addresses = []
-        Vanitygen.continuous([pattern_any], iters: 4) { |data| addresses << data[:address] }
-        expect(addresses).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
+        Vanitygen.continuous([pattern_any], iters: 4, &capture(:address))
+        expect(captured).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
       end
 
       it 'starts with matching pattern' do
-        addresses = []
-        Vanitygen.continuous([pattern_string_a], iters: 2) { |data| addresses << data[:address] }
-        expect(addresses).to all(start_with(pattern_string_a))
+        Vanitygen.continuous([pattern_string_a], iters: 2, &capture(:address))
+        expect(captured).to all(start_with(pattern_string_a))
+      end
+
+      it 'supports regexes' do
+        Vanitygen.continuous([pattern_regex_foo], iters: 1, &capture(:address))
+        expect(captured).to all(match(pattern_regex_foo))
+      end
+
+      it 'dies if using mixed types' do
+        expect{Vanitygen.continuous([pattern_regex_foo, pattern_string_a], &noop)}.to raise_error(TypeError)
       end
     end
   end

@@ -16,6 +16,14 @@ module Vanitygen
 
     iters = options.delete(:iters) || Float::INFINITY
 
+    if patterns.any? { |p| p.is_a?(Regexp) }
+      if patterns.all? { |p| p.is_a?(Regexp) }
+        patterns = patterns.map(&:source)
+        options[:regex] = true
+      else
+        raise TypeError.new('patterns cannot be mixed regex and non-regex')
+      end
+    end
     while (iters -= 1) >= 0
       yield Ext.generate(patterns, options)
     end
