@@ -5,10 +5,14 @@ module Vanitygen
   def self.generate(pattern, options={})
     if pattern.is_a?(Regexp)
       options[:regex] = true
-      Ext.generate([pattern.source], options)
+      pattern = pattern.source
     else
-      Ext.generate([pattern.to_s], options)
+      pattern = pattern.to_s
     end
+
+    ret = nil
+    Ext.generate([pattern], options) { |data| ret = data }
+    ret
   end
 
   def self.continuous(patterns, options={})
@@ -25,7 +29,9 @@ module Vanitygen
       end
     end
     while (iters -= 1) >= 0
-      yield Ext.generate(patterns, options)
+      ret = nil
+      Ext.generate(patterns, options) { |data| ret = data }
+      yield ret
     end
   end
 

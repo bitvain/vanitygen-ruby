@@ -1,1 +1,1 @@
-../../vanitygen-c/util.c
+../../modules/vanitygen-c/util.c

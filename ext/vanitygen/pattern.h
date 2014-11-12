@@ -1,1 +1,1 @@
-../../vanitygen-c/pattern.h
+../../modules/vanitygen-c/pattern.h

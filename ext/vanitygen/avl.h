@@ -1,1 +1,1 @@
-../../vanitygen-c/avl.h
+../../modules/vanitygen-c/avl.h

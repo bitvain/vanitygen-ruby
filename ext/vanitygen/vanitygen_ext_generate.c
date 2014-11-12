@@ -12,20 +12,22 @@ extern int start_threads(vg_context_t *vcp, int nthreads);
 static void vg_output_timing_noop(vg_context_t *vcp, double count, unsigned long long rate, unsigned long long total) {}
 static void vg_generate_output_error(vg_context_t *vcp, const char *info) {}
 
-static VALUE rb_generate_return; // FIXME: thread unsafe
+static VALUE rb_callback; // FIXME: thread unsafe
 static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char *pattern) {
-    rb_generate_return = rb_hash_new();
+    VALUE rb_data = rb_hash_new();
 
     char buffer[VG_PROTKEY_MAX_B58];
     EC_POINT *ppnt = (EC_POINT *) EC_KEY_get0_public_key(pkey);
 
     vg_encode_address(ppnt, EC_KEY_get0_group(pkey), vcp->vc_pubkeytype, buffer);
     VALUE rb_address = rb_str_new2(buffer);
-    rb_hash_aset(rb_generate_return, rbsym_address, rb_address);
+    rb_hash_aset(rb_data, rbsym_address, rb_address);
 
     vg_encode_privkey(pkey, vcp->vc_privtype, buffer);
     VALUE rb_private_key = rb_str_new2(buffer);
-    rb_hash_aset(rb_generate_return, rbsym_wif, rb_private_key);
+    rb_hash_aset(rb_data, rbsym_wif, rb_private_key);
+
+    rb_funcall(rb_callback, rb_intern("call"), 1, rb_data);
 }
 
 vg_context_t * create_context(VALUE rb_options) {
@@ -67,11 +69,12 @@ VALUE vanitygen_ext_generate(VALUE self, VALUE rb_patterns, VALUE rb_options) {
         vg_context_add_patterns(vcp, &pattern, 1);
     }
 
+    rb_callback = rb_block_proc();
     VALUE rb_threads = rb_hash_aref(rb_options, rbsym_threads);
     int threads = (rb_threads == Qnil) ? 1 : NUM2INT(rb_threads);
     start_threads(vcp, threads);
 
     vcp->vc_free(vcp);
 
-    return rb_generate_return;
+    return Qnil;
 }

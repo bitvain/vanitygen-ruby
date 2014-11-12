@@ -12,7 +12,7 @@ def required_headers
 end
 
 def required_libs
-  File.open(File.expand_path '../../../vanitygen-c/Makefile', __FILE__) do |makefile|
+  File.open(File.expand_path '../../../modules/vanitygen-c/Makefile', __FILE__) do |makefile|
     makefile.grep(/^LIBS=.*$/).first.gsub(/(LIBS=| )-l/, ' ').split
   end
 end
