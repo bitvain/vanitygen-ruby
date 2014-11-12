@@ -25,6 +25,6 @@ required_libs.sort.each do |lib|
   have_library lib
 end
 
-$CFLAGS << " -std=c99"
+$CFLAGS << " -std=gnu99"
 
 create_makefile 'vanitygen/vanitygen_ext'
