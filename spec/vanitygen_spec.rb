@@ -4,31 +4,46 @@ require 'bitcoin'
 describe Vanitygen do
   let(:pattern_string_a) { '1A' }
   let(:pattern_string_b) { '1B' }
+  let(:pattern_regex_a) { /[fF][oO][oO]/ }
   let(:pattern_any) { '1' }
 
   describe '.generate' do
-    subject { Vanitygen.generate(pattern_string_a) }
+    context 'string' do
+      subject { Vanitygen.generate(pattern_string_a) }
 
-    it 'has valid address' do
-      expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
+      it 'has valid address' do
+        expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
+      end
+
+      it 'has address starting with pattern' do
+        expect(subject[:address]).to start_with(pattern_string_a)
+      end
+
+      it 'has correct wif (wallet import format) to unlock pattern' do
+        bkey = Bitcoin::Key.from_base58(subject[:wif])
+        expect(subject[:address]).to eq(bkey.addr)
+      end
+
+      it 'matches with case insensitivity' do
+        addresses = (1..300).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
+        # Should really be these:
+        # expect(addresses).to any(start_with pattern_string_a.upcase)
+        # expect(addresses).to any(start_with pattern_string_b.upcase)
+        expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.upcase) } }
+        expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.downcase) } }
+      end
     end
 
-    it 'has address starting with pattern' do
-      expect(subject[:address]).to start_with(pattern_string_a)
-    end
+    context 'regex' do
+      subject { Vanitygen.generate(pattern_regex_a) }
 
-    it 'has correct wif (wallet import format) to unlock pattern' do
-      bkey = Bitcoin::Key.from_base58(subject[:wif])
-      expect(subject[:address]).to eq(bkey.addr)
-    end
+      it 'has valid address' do
+        expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
+      end
 
-    it 'matches with case insensitivity' do
-      addresses = (1..300).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
-      # Should really be these:
-      # expect(addresses).to any(start_with pattern_string_a.upcase)
-      # expect(addresses).to any(start_with pattern_string_b.upcase)
-      expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.upcase) } }
-      expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.downcase) } }
+      it 'has address matching pattern' do
+        expect(subject[:address]).to match(pattern_regex_a)
+      end
     end
   end
 

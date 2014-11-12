@@ -29,8 +29,17 @@ static void vg_generate_output_match(vg_context_t *vcp, EC_KEY *pkey, const char
 }
 
 vg_context_t * create_context(VALUE rb_options) {
-    const bool caseinsensitive = RTEST(rb_hash_aref(rb_options, rbsym_case_insensitive));
-    vg_context_t *vcp = vg_prefix_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE, caseinsensitive);
+    vg_context_t *vcp;
+    bool regex = RTEST(rb_hash_aref(rb_options, rbsym_regex)) ||
+                 RTEST(rb_hash_aref(rb_options, rbsym_regexp));
+
+    if(regex) {
+      vcp = vg_regex_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE);
+    } else {
+      const bool caseinsensitive = RTEST(rb_hash_aref(rb_options, rbsym_case_insensitive));
+      vcp = vg_prefix_context_new(BITCOIN_ADDR_TYPE, BITCOIN_PRIV_TYPE, caseinsensitive);
+    }
+
     vcp->vc_verbose = false;
     vcp->vc_result_file = NULL;        // Write pattern matches to <file>
     vcp->vc_remove_on_match = !RTEST(rb_hash_aref(rb_options, rbsym_continuous));

@@ -3,7 +3,12 @@ module Vanitygen
   autoload :Ext,    'vanitygen/vanitygen_ext'
 
   def self.generate(pattern, options={})
-    Ext.generate([pattern], options)
+    if pattern.is_a?(Regexp)
+      options[:regex] = true
+      Ext.generate([pattern.source], options)
+    else
+      Ext.generate([pattern.to_s], options)
+    end
   end
 
   def self.continuous(patterns, options={})
@@ -11,7 +16,6 @@ module Vanitygen
 
     iters = options.delete(:iters) || Float::INFINITY
 
-    patterns.push options unless options.empty?
     while (iters -= 1) >= 0
       yield Ext.generate(patterns, options)
     end
