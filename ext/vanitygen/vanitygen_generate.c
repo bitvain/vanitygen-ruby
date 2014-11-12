@@ -62,12 +62,14 @@ VALUE vanitygen_generate(VALUE self, VALUE rb_patterns, VALUE rb_options) {
     vg_context_t *vcp = create_context(rb_options);
     long len = RARRAY_LEN(rb_patterns);
     for(int i=0; i < len; i++) {
-      VALUE rb_pattern = rb_ary_entry(rb_patterns, i);
-      const char *pattern = StringValueCStr(rb_pattern);
-      vg_context_add_patterns(vcp, &pattern, 1);
+        VALUE rb_pattern = rb_ary_entry(rb_patterns, i);
+        const char *pattern = StringValueCStr(rb_pattern);
+        vg_context_add_patterns(vcp, &pattern, 1);
     }
 
-    start_threads(vcp, 1); // FIXME: actual threading
+    VALUE rb_threads = rb_hash_aref(rb_options, rbsym_threads);
+    int threads = (rb_threads == Qnil) ? 1 : NUM2INT(rb_threads);
+    start_threads(vcp, threads);
 
     vcp->vc_free(vcp);
 

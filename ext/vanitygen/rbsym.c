@@ -7,6 +7,7 @@ VALUE rbsym_continuous;
 VALUE rbsym_only_one;
 VALUE rbsym_regex;
 VALUE rbsym_regexp;
+VALUE rbsym_threads;
 
 void init_rbsym() {
     rbsym_address = ID2SYM(rb_intern("address"));
@@ -16,4 +17,5 @@ void init_rbsym() {
     rbsym_only_one = ID2SYM(rb_intern("only_one"));
     rbsym_regex = ID2SYM(rb_intern("regex"));
     rbsym_regexp = ID2SYM(rb_intern("regexp"));
+    rbsym_threads = ID2SYM(rb_intern("threads"));
 }

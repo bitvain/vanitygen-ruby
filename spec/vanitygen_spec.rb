@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 require 'vanitygen'
 require 'bitcoin'
 
@@ -5,6 +7,7 @@ describe Vanitygen do
   let(:pattern_string_a) { '1A' }
   let(:pattern_string_b) { '1B' }
   let(:pattern_regex_foo) { /[fF][oO][oO]/ }
+  let(:pattern_difficult) { '1ab' }
   let(:pattern_any) { '1' }
 
   describe '.generate' do
@@ -31,6 +34,13 @@ describe Vanitygen do
         # expect(addresses).to any(start_with pattern_string_b.upcase)
         expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.upcase) } }
         expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.downcase) } }
+      end
+
+      xit 'uses threads' do
+        #Buggy threading!
+        single = timeit { Vanitygen.generate(pattern_difficult) }
+        multi = timeit { Vanitygen.generate(pattern_difficult, threads: 8) }
+        expect(multi).to be < single
       end
     end
 
