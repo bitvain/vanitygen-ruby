@@ -95,4 +95,25 @@ describe Vanitygen do
       expect(Vanitygen.difficulty(pattern_string_a)).to be_a Numeric
     end
   end
+
+  describe '.valid?' do
+    it 'is true for starting with 1' do
+      expect(Vanitygen.valid?('1abc')).to be(true)
+    end
+
+    it 'is false for starting with something else' do
+      expect(Vanitygen.valid?('abc')).to be(false)
+    end
+
+    it 'is false for really long strings' do
+      expect(Vanitygen.valid?('1abcdefghijklmnopqrstuvwxyz')).to be(false)
+    end
+
+    it 'is false for illegal characters' do
+      expect(Vanitygen.valid?('10')).to be(false)
+      expect(Vanitygen.valid?('1O')).to be(false)
+      expect(Vanitygen.valid?('1I')).to be(false)
+      expect(Vanitygen.valid?('1l')).to be(false)
+    end
+  end
 end

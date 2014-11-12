@@ -32,4 +32,9 @@ module Vanitygen
   def self.difficulty(pattern)
     return Ext.difficulty_prefix(pattern)
   end
+
+  VALIDITY = /^1[^0OIl]*$/
+  def self.valid?(pattern)
+    pattern.length < 19 && !!(VALIDITY =~ pattern)
+  end
 end
