@@ -55,7 +55,7 @@ vg_context_t * create_context(VALUE rb_options) {
     return vcp;
 }
 
-VALUE vanitygen_generate(VALUE self, VALUE rb_patterns, VALUE rb_options) {
+VALUE vanitygen_ext_generate(VALUE self, VALUE rb_patterns, VALUE rb_options) {
     Check_Type(rb_patterns, T_ARRAY);
     Check_Type(rb_options, T_HASH);
 
