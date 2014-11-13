@@ -45,7 +45,7 @@ vg_context_t * create_context(VALUE rb_options) {
     vcp->vc_verbose = false;
     vcp->vc_result_file = NULL;        // Write pattern matches to <file>
     vcp->vc_remove_on_match = !RTEST(rb_hash_aref(rb_options, rbsym_continuous));
-    vcp->vc_only_one = !RTEST(rb_hash_aref(rb_options, rbsym_only_one));
+    vcp->vc_only_one = RTEST(rb_hash_aref(rb_options, rbsym_only_one));
     vcp->vc_format = VCF_PUBKEY;       // Generate address with the given format (pubkey or script)
     vcp->vc_pubkeytype = BITCOIN_ADDR_TYPE;
     vcp->vc_pubkey_base = NULL;        // Specify base public key for piecewise key generation

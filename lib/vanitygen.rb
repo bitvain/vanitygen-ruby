@@ -15,7 +15,7 @@ module Vanitygen
     ret
   end
 
-  def self.continuous(patterns, options={})
+  def self.continuous(patterns, options={}, &block)
     raise LocalJumpError.new('no block given') unless block_given?
 
     if patterns.any? { |p| p.is_a?(Regexp) }
@@ -27,11 +27,8 @@ module Vanitygen
       end
     end
 
-    loop do
-      ret = nil
-      Ext.generate(patterns, options) { |data| ret = data }
-      yield ret
-    end
+    options[:continuous] = true
+    Ext.generate(patterns, options, &block)
   end
 
   def self.difficulty(pattern)
