@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 require 'vanitygen'
+
 require 'bitcoin'
+require 'timeout'
 
 describe Vanitygen do
   let(:pattern_string_a)  { '1A' }
@@ -61,12 +63,6 @@ describe Vanitygen do
     context 'threaded with capture block' do
       let(:captured) { [] }
 
-      after do
-        Thread.list.each do |thread|
-          thread.kill unless thread == Thread.current
-        end
-      end
-
       def capture(attr=nil)
         if attr.nil?
           proc { |data| captured << data }
@@ -75,39 +71,40 @@ describe Vanitygen do
         end
       end
 
-      def threaded_continuous(*args, &block)
-        Thread.new do
-          Vanitygen.continuous(*args, &block)
+      def continuous_with_timeout(patterns, options={}, &block)
+        duration = options.delete(:timeout) || 0.1
+        Timeout.timeout duration do
+          Vanitygen.continuous(patterns, options, &block)
         end
+
+        raise 'Expected timeout but did not happen'
+      rescue Timeout::Error => e
+        # expected
       end
 
       context 'base test' do
         before do
-          threaded_continuous([pattern_any], &capture(:address))
+          continuous_with_timeout([pattern_any], &capture(:address))
         end
 
         it 'runs a lot' do
-          sleep 0.1
           expect(captured.count).to be > 10
         end
 
         it 'returns valid addresses' do
-          sleep 0.1
           expect(captured).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
         end
       end
 
       context 'with string' do
         it 'starts with matching pattern' do
-          threaded_continuous([pattern_string_a], &capture(:address))
-          sleep 0.1
+          continuous_with_timeout([pattern_string_a], &capture(:address))
           expect(captured.size).to be > 1
           expect(captured).to all(start_with(pattern_string_a))
         end
 
         it 'matches with case insensitivity' do
-          threaded_continuous([pattern_string_ab], case_insensitive: true, &capture(:address))
-          sleep 0.2
+          continuous_with_timeout([pattern_string_ab], case_insensitive: true, &capture(:address))
           prefixes = captured.map { |addr| addr[0..2] }
           expect(prefixes.uniq.size).to be > 1
         end
@@ -115,8 +112,7 @@ describe Vanitygen do
 
       context 'with regex' do
         it 'matches the regex' do
-          threaded_continuous([pattern_regex_ab], &capture(:address))
-          sleep 0.1
+          continuous_with_timeout([pattern_regex_ab], &capture(:address))
           expect(captured.size).to be > 1
           expect(captured).to all(match(pattern_regex_ab))
         end
