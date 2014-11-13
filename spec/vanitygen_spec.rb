@@ -108,6 +108,15 @@ describe Vanitygen do
           prefixes = captured.map { |addr| addr[0..2] }
           expect(prefixes.uniq.size).to be > 1
         end
+
+        it 'matches multiple patterns' do
+          continuous_with_timeout([pattern_string_a, pattern_string_b], &capture(:address))
+          # should be
+          # expect(captured).to any(addr.start_with?(pattern_string_a))
+          # expect(captured).to any(addr.start_with?(pattern_string_b))
+          expect(captured).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a) } }
+          expect(captured).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_b) } }
+        end
       end
 
       context 'with regex' do
