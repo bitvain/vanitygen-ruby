@@ -4,11 +4,11 @@ require 'vanitygen'
 require 'bitcoin'
 
 describe Vanitygen do
-  let(:pattern_string_a) { '1A' }
-  let(:pattern_string_b) { '1B' }
-  let(:pattern_regex_foo) { /[fF][oO][oO]/ }
-  let(:pattern_difficult) { '1ab' }
-  let(:pattern_any) { '1' }
+  let(:pattern_string_a)  { '1A' }
+  let(:pattern_string_b)  { '1B' }
+  let(:pattern_string_ab) { '1AB' }
+  let(:pattern_regex_ab)  { /[aA][bB]/ }
+  let(:pattern_any)       { '1' }
 
   describe '.generate' do
     context 'string' do
@@ -27,32 +27,23 @@ describe Vanitygen do
         expect(subject[:address]).to eq(bkey.addr)
       end
 
-      it 'matches with case insensitivity' do
-        addresses = (1..300).map { Vanitygen.generate(pattern_string_a, case_insensitive: true)[:address] }
-        # Should really be these:
-        # expect(addresses).to any(start_with pattern_string_a.upcase)
-        # expect(addresses).to any(start_with pattern_string_b.upcase)
-        expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.upcase) } }
-        expect(addresses).to satisfy { |a| a.any? { |addr| addr.start_with?(pattern_string_a.downcase) } }
-      end
-
       xit 'uses threads' do
         #Buggy threading!
-        single = timeit { Vanitygen.generate(pattern_difficult) }
-        multi = timeit { Vanitygen.generate(pattern_difficult, threads: 8) }
+        single = timeit { Vanitygen.generate(pattern_string_ab) }
+        multi = timeit { Vanitygen.generate(pattern_string_ab, threads: 8) }
         expect(multi).to be < single
       end
     end
 
     context 'regex' do
-      subject { Vanitygen.generate(pattern_regex_foo) }
+      subject { Vanitygen.generate(pattern_regex_ab) }
 
       it 'has valid address' do
         expect(subject[:address]).to satisfy { |addr| Bitcoin.valid_address?(addr) }
       end
 
       it 'has address matching pattern' do
-        expect(subject[:address]).to match(pattern_regex_foo)
+        expect(subject[:address]).to match(pattern_regex_ab)
       end
     end
   end
@@ -62,40 +53,73 @@ describe Vanitygen do
       expect{Vanitygen.continuous([pattern_any])}.to raise_error(LocalJumpError)
     end
 
-    context 'with block' do
-      let(:noop) { proc{} }
+    it 'requires same type' do
+      noop = proc{}
+      expect{Vanitygen.continuous([pattern_regex_ab, pattern_string_a], &noop)}.to raise_error(TypeError)
+    end
+
+    context 'threaded with capture block' do
       let(:captured) { [] }
 
-      def capture(attr=nil)
-        if attr
-          proc { |data| captured << data[:address] }
-        else
-          proc { |data| captured << data }
+      after do
+        Thread.list.each do |thread|
+          thread.kill unless thread == Thread.current
         end
       end
 
-      it 'runs a lot' do
-        Vanitygen.continuous([pattern_any], iters: 10, &capture)
-        expect(captured.count).to be 10
+      def capture(attr=nil)
+        if attr.nil?
+          proc { |data| captured << data }
+        else
+          proc { |data| captured << data[attr] }
+        end
       end
 
-      it 'returns valid addresses' do
-        Vanitygen.continuous([pattern_any], iters: 4, &capture(:address))
-        expect(captured).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
+      def threaded_continuous(*args, &block)
+        Thread.new do
+          Vanitygen.continuous(*args, &block)
+        end
       end
 
-      it 'starts with matching pattern' do
-        Vanitygen.continuous([pattern_string_a], iters: 2, &capture(:address))
-        expect(captured).to all(start_with(pattern_string_a))
+      context 'base test' do
+        before do
+          threaded_continuous([pattern_any], &capture(:address))
+        end
+
+        it 'runs a lot' do
+          sleep 0.1
+          expect(captured.count).to be > 10
+        end
+
+        it 'returns valid addresses' do
+          sleep 0.1
+          expect(captured).to all(satisfy { |addr| Bitcoin.valid_address?(addr) })
+        end
       end
 
-      it 'supports regexes' do
-        Vanitygen.continuous([pattern_regex_foo], iters: 1, &capture(:address))
-        expect(captured).to all(match(pattern_regex_foo))
+      context 'with string' do
+        it 'starts with matching pattern' do
+          threaded_continuous([pattern_string_a], &capture(:address))
+          sleep 0.1
+          expect(captured.size).to be > 1
+          expect(captured).to all(start_with(pattern_string_a))
+        end
+
+        it 'matches with case insensitivity' do
+          threaded_continuous([pattern_string_ab], case_insensitive: true, &capture(:address))
+          sleep 0.2
+          prefixes = captured.map { |addr| addr[0..2] }
+          expect(prefixes.uniq.size).to be > 1
+        end
       end
 
-      it 'dies if using mixed types' do
-        expect{Vanitygen.continuous([pattern_regex_foo, pattern_string_a], &noop)}.to raise_error(TypeError)
+      context 'with regex' do
+        it 'matches the regex' do
+          threaded_continuous([pattern_regex_ab], &capture(:address))
+          sleep 0.1
+          expect(captured.size).to be > 1
+          expect(captured).to all(match(pattern_regex_ab))
+        end
       end
     end
   end

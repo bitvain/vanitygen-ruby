@@ -18,8 +18,6 @@ module Vanitygen
   def self.continuous(patterns, options={})
     raise LocalJumpError.new('no block given') unless block_given?
 
-    iters = options.delete(:iters) || Float::INFINITY
-
     if patterns.any? { |p| p.is_a?(Regexp) }
       if patterns.all? { |p| p.is_a?(Regexp) }
         patterns = patterns.map(&:source)
@@ -28,7 +26,8 @@ module Vanitygen
         raise TypeError.new('patterns cannot be mixed regex and non-regex')
       end
     end
-    while (iters -= 1) >= 0
+
+    loop do
       ret = nil
       Ext.generate(patterns, options) { |data| ret = data }
       yield ret
